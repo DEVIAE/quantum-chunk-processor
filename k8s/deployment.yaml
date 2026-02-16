@@ -28,12 +28,12 @@ spec:
               topologyKey: kubernetes.io/hostname
       containers:
       - name: chunk-processor
-        image: chunk-processor:latest
+        image: image-registry.openshift-image-registry.svc:5000/felipesoto-dev/chunk-processor:latest
         ports:
         - containerPort: 8082
         env:
         - name: AMQ_HOST
-          value: "amq-broker-hdls-svc"
+          value: "amq-broker"
         - name: AMQ_PORT
           value: "61616"
         - name: AMQ_USER
@@ -46,8 +46,12 @@ spec:
             secretKeyRef:
               name: amq-credentials
               key: password
-        - name: REDIS_HOST
+        - name: QUANTUM_REDIS_HOST
           value: "redis"
+        - name: QUANTUM_REDIS_PORT
+          value: "6379"
+        - name: QUANTUM_REDIS_PASSWORD
+          value: "redis123"
         - name: CONSUMER_CONCURRENCY
           value: "1-10"
         resources:
@@ -57,15 +61,20 @@ spec:
           limits:
             memory: "1Gi"
             cpu: "500m"
+        startupProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8082
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          failureThreshold: 12
         livenessProbe:
           httpGet:
             path: /actuator/health
             port: 8082
-          initialDelaySeconds: 60
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /actuator/health
             port: 8082
-          initialDelaySeconds: 30
           periodSeconds: 5

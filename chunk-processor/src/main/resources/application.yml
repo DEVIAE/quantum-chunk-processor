@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: quantum-chunk-processor
+
+  artemis:
+    broker-url: tcp://${AMQ_HOST:localhost}:${AMQ_PORT:61616}
+    user: ${AMQ_USER:admin}
+    password: ${AMQ_PASSWORD:admin}
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000ms
+
+  datasource:
+    url: jdbc:h2:mem:tracking;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+processor:
+  consumer:
+    concurrency: ${CONSUMER_CONCURRENCY:1-5}
+    prefetch: ${CONSUMER_PREFETCH:10}
+  metrics:
+    queue-poll-interval: ${QUEUE_POLL_INTERVAL:15000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  metrics:
+    tags:
+      application: chunk-processor
+    export:
+      prometheus:
+        enabled: true
+
+server:
+  port: ${SERVER_PORT:8082}
+
+logging:
+  level:
+    com.quantum: INFO
+    org.springframework.jms: INFO
+    org.apache.activemq: WARN

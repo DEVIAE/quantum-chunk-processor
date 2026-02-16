@@ -23,7 +23,7 @@ public class ChunkProcessingService {
     private final LineProcessorService lineProcessorService;
 
     public ChunkProcessingService(MeterRegistry meterRegistry,
-                                  LineProcessorService lineProcessorService) {
+            LineProcessorService lineProcessorService) {
         this.lineProcessorService = lineProcessorService;
         this.chunkProcessingTimer = Timer.builder("chunk.processing.time")
                 .description("Time to process a chunk")
@@ -67,16 +67,14 @@ public class ChunkProcessingService {
                         chunk.getFileName(),
                         processedCount.get(),
                         failedCount.get(),
-                        processingTimeMs
-                );
+                        processingTimeMs);
             }
 
             return ChunkResult.success(
                     chunk.getChunkId(),
                     chunk.getFileName(),
                     processedCount.get(),
-                    processingTimeMs
-            );
+                    processingTimeMs);
         });
     }
 }

@@ -26,10 +26,10 @@ public class ChunkConsumer {
     private final JmsTemplate jmsTemplate;
 
     public ChunkConsumer(ObjectMapper objectMapper,
-                         ChunkProcessingService processingService,
-                         IdempotencyService idempotencyService,
-                         TrackingService trackingService,
-                         JmsTemplate jmsTemplate) {
+            ChunkProcessingService processingService,
+            IdempotencyService idempotencyService,
+            TrackingService trackingService,
+            JmsTemplate jmsTemplate) {
         this.objectMapper = objectMapper;
         this.processingService = processingService;
         this.idempotencyService = idempotencyService;
@@ -37,10 +37,7 @@ public class ChunkConsumer {
         this.jmsTemplate = jmsTemplate;
     }
 
-    @JmsListener(
-            destination = QueueConstants.CHUNK_QUEUE,
-            concurrency = "${processor.consumer.concurrency:1-5}"
-    )
+    @JmsListener(destination = QueueConstants.CHUNK_QUEUE, concurrency = "${processor.consumer.concurrency:1-5}")
     public void processChunk(String chunkJson) {
         Chunk chunk = null;
         try {

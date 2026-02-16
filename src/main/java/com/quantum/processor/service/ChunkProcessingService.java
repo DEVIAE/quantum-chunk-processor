@@ -61,6 +61,16 @@ public class ChunkProcessingService {
             chunksProcessedCounter.increment();
             long processingTimeMs = System.currentTimeMillis() - startTime;
 
+            if (failedCount.get() > 0) {
+                return ChunkResult.partialSuccess(
+                        chunk.getChunkId(),
+                        chunk.getFileName(),
+                        processedCount.get(),
+                        failedCount.get(),
+                        processingTimeMs
+                );
+            }
+
             return ChunkResult.success(
                     chunk.getChunkId(),
                     chunk.getFileName(),

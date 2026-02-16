@@ -62,7 +62,12 @@ public class ChunkConsumer {
                     chunk.getChunkId(), result.getLinesProcessed());
 
         } catch (JsonProcessingException e) {
-            log.error("Failed to deserialize chunk message", e);
+            log.error("Failed to deserialize chunk message, sending to DLQ", e);
+            try {
+                jmsTemplate.convertAndSend(QueueConstants.DLQ, chunkJson);
+            } catch (Exception dlqEx) {
+                log.error("Failed to send poison message to DLQ", dlqEx);
+            }
         } catch (Exception e) {
             log.error("Failed to process chunk: {}",
                     chunk != null ? chunk.getChunkId() : "unknown", e);

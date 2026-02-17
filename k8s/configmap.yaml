@@ -3,9 +3,9 @@ kind: ConfigMap
 metadata:
   name: chunk-processor-config
 data:
-  AMQ_HOST: "amq-broker-hdls-svc"
+  AMQ_HOST: "amq-broker"
   AMQ_PORT: "61616"
-  REDIS_HOST: "redis"
-  REDIS_PORT: "6379"
+  QUANTUM_REDIS_HOST: "redis"
+  QUANTUM_REDIS_PORT: "6379"
   CONSUMER_CONCURRENCY: "1-10"
   SERVER_PORT: "8082"

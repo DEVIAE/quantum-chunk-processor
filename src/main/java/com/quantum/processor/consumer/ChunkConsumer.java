@@ -26,10 +26,10 @@ public class ChunkConsumer {
     private final JmsTemplate jmsTemplate;
 
     public ChunkConsumer(ObjectMapper objectMapper,
-                         ChunkProcessingService processingService,
-                         IdempotencyService idempotencyService,
-                         TrackingService trackingService,
-                         JmsTemplate jmsTemplate) {
+            ChunkProcessingService processingService,
+            IdempotencyService idempotencyService,
+            TrackingService trackingService,
+            JmsTemplate jmsTemplate) {
         this.objectMapper = objectMapper;
         this.processingService = processingService;
         this.idempotencyService = idempotencyService;
@@ -37,10 +37,7 @@ public class ChunkConsumer {
         this.jmsTemplate = jmsTemplate;
     }
 
-    @JmsListener(
-            destination = QueueConstants.CHUNK_QUEUE,
-            concurrency = "${processor.consumer.concurrency:1-5}"
-    )
+    @JmsListener(destination = QueueConstants.CHUNK_QUEUE, concurrency = "${processor.consumer.concurrency:1-5}")
     public void processChunk(String chunkJson) {
         Chunk chunk = null;
         try {
@@ -62,7 +59,12 @@ public class ChunkConsumer {
                     chunk.getChunkId(), result.getLinesProcessed());
 
         } catch (JsonProcessingException e) {
-            log.error("Failed to deserialize chunk message", e);
+            log.error("Failed to deserialize chunk message, sending to DLQ", e);
+            try {
+                jmsTemplate.convertAndSend(QueueConstants.DLQ, chunkJson);
+            } catch (Exception dlqEx) {
+                log.error("Failed to send poison message to DLQ", dlqEx);
+            }
         } catch (Exception e) {
             log.error("Failed to process chunk: {}",
                     chunk != null ? chunk.getChunkId() : "unknown", e);

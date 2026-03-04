@@ -47,6 +47,13 @@ management:
 server:
   port: ${SERVER_PORT:8082}
 
+elastic:
+  url: ${ELASTIC_URL}
+  api-key: ${ELASTIC_API_KEY}
+  index: quantum-chunk-events
+  connect-timeout: 2s
+  socket-timeout: 5s
+  
 logging:
   level:
     com.quantum: INFO

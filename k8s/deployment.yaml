@@ -54,6 +54,18 @@ spec:
           value: "redis123"
         - name: CONSUMER_CONCURRENCY
           value: "1-10"
+          
+        - name: ELASTIC_URL
+          value: "https://my-elasticsearch-project-f330d4.es.us-central1.gcp.elastic.cloud:443"
+
+        - name: ELASTIC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: elastic-credentials
+              key: api-key
+
+        - name: ELASTIC_INDEX
+          value: "quantum-chunk-events"
         resources:
           requests:
             memory: "512Mi"

@@ -8,11 +8,9 @@ import io.micrometer.core.instrument.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
 import java.util.concurrent.atomic.AtomicInteger;
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import com.quantum.processor.DTO.ChunkIndexedEvent;
+
 @Service
 public class ChunkProcessingService {
 

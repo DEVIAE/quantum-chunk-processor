@@ -23,13 +23,13 @@ public class ChunkProcessingService {
     private final Counter linesFailedCounter;
     private final Counter chunksProcessedCounter;
     private final LineProcessorService lineProcessorService;
-    private final ElasticsearchService elasticsearchService;
+    private final ElasticSearchService elasticSearchService;
 
     public ChunkProcessingService(MeterRegistry meterRegistry,
             LineProcessorService lineProcessorService,
-            ElasticsearchService elasticsearchServic) {
+            ElasticSearchService elasticSearchService) {
         this.lineProcessorService = lineProcessorService;
-        this.elasticsearchService = elasticsearchService;
+        this.elasticSearchService = elasticSearchService;
         this.chunkProcessingTimer = Timer.builder("chunk.processing.time")
                 .description("Time to process a chunk")
                 .register(meterRegistry);
@@ -42,16 +42,16 @@ public class ChunkProcessingService {
         this.chunksProcessedCounter = Counter.builder("chunks.processed.total")
                 .description("Total chunks processed")
                 .register(meterRegistry);
-                
+
     }
 
     public ChunkResult processChunk(Chunk chunk) {
         return chunkProcessingTimer.record(() -> {
-    
+
             AtomicInteger processedCount = new AtomicInteger(0);
             AtomicInteger failedCount = new AtomicInteger(0);
             long startTime = System.currentTimeMillis();
-    
+
             for (String line : chunk.getLines()) {
                 try {
                     lineProcessorService.processLine(line, chunk.getFileName());
@@ -64,12 +64,12 @@ public class ChunkProcessingService {
                             chunk.getChunkId(), e.getMessage());
                 }
             }
-    
+
             chunksProcessedCounter.increment();
             long processingTimeMs = System.currentTimeMillis() - startTime;
-    
+
             ChunkResult result;
-    
+
             if (failedCount.get() > 0) {
                 result = ChunkResult.partialSuccess(
                         chunk.getChunkId(),
@@ -84,14 +84,14 @@ public class ChunkProcessingService {
                         processedCount.get(),
                         processingTimeMs);
             }
-    
-            // 🔥 NUEVO: indexar en Elasticsearch
+
+            // Index chunk result in Elasticsearch
             try {
-                elasticsearchService.indexChunkResult(result);
+                elasticSearchService.indexChunkResult(result);
             } catch (Exception e) {
                 log.error("Failed to index chunk result in Elasticsearch", e);
             }
-    
+
             return result;
         });
     }

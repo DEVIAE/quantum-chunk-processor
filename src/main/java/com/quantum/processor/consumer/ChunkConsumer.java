@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.quantum.common.config.QueueConstants;
 import com.quantum.common.dto.ChunkResult;
 import com.quantum.common.model.Chunk;
+import com.quantum.common.util.LoggingUtils;
 import com.quantum.processor.service.ChunkProcessingService;
 import com.quantum.processor.service.IdempotencyService;
 import com.quantum.processor.service.TrackingService;
@@ -42,6 +43,11 @@ public class ChunkConsumer {
         Chunk chunk = null;
         try {
             chunk = objectMapper.readValue(chunkJson, Chunk.class);
+
+            // R3: Set MDC context for structured logging
+            LoggingUtils.setChunkContext(chunk.getChunkId(), chunk.getFileName(),
+                    chunk.getChunkIndex(), chunk.getTotalChunks());
+
             log.info("Received chunk: {}", chunk.getChunkId());
 
             if (idempotencyService.isDuplicate(chunk.getChunkId())) {
@@ -55,11 +61,19 @@ public class ChunkConsumer {
 
             sendResult(result);
 
+            // R21: Audit chunk processing
+            LoggingUtils.audit("CHUNK_PROCESSED", chunk.getChunkId(),
+                    result.getStatus().name(),
+                    "lines=" + result.getLinesProcessed() + ", time=" + result.getProcessingTimeMs() + "ms");
+
             log.info("Chunk {} processed successfully ({} lines)",
                     chunk.getChunkId(), result.getLinesProcessed());
 
         } catch (JsonProcessingException e) {
             log.error("Failed to deserialize chunk message, sending to DLQ", e);
+            // R27: Log failure details
+            LoggingUtils.logFailure(log, "chunk-processor", "ChunkConsumer",
+                    "deserialize", e);
             try {
                 jmsTemplate.convertAndSend(QueueConstants.DLQ, chunkJson);
             } catch (Exception dlqEx) {
@@ -68,6 +82,9 @@ public class ChunkConsumer {
         } catch (Exception e) {
             log.error("Failed to process chunk: {}",
                     chunk != null ? chunk.getChunkId() : "unknown", e);
+            // R27: Log failure details
+            LoggingUtils.logFailure(log, "chunk-processor", "ChunkConsumer",
+                    "processChunk", e);
             if (chunk != null) {
                 ChunkResult failResult = ChunkResult.failure(
                         chunk.getChunkId(), chunk.getFileName(), e.getMessage());
@@ -75,6 +92,9 @@ public class ChunkConsumer {
                 sendResult(failResult);
             }
             throw new RuntimeException("Chunk processing failed", e);
+        } finally {
+            // R3: Clear MDC after processing
+            LoggingUtils.clearChunkContext();
         }
     }
 

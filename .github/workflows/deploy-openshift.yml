@@ -62,6 +62,18 @@ jobs:
           # Apply KEDA ScaledObject only if CRD is installed
           oc apply -f k8s/keda-scaledobject.yaml 2>/dev/null || echo "KEDA not installed, skipping ScaledObject"
 
+      - name: Create secrets
+        run: |
+          # Create elastic-credentials secret (idempotent)
+          oc delete secret elastic-credentials --ignore-not-found
+          oc create secret generic elastic-credentials \
+            --from-literal=api-key=${{ secrets.ELASTIC_API_KEY }}
+          # Create amq-credentials secret if not exists
+          oc get secret amq-credentials &>/dev/null || \
+            oc create secret generic amq-credentials \
+              --from-literal=username=admin \
+              --from-literal=password=admin
+
       - name: Configure environment
         run: |
           oc set env deployment/${{ env.SERVICE_NAME }} \

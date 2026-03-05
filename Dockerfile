@@ -9,7 +9,9 @@ WORKDIR /app
 
 COPY target/quantum-chunk-processor-*.jar app.jar
 
-RUN mkdir -p /app/logs && chown -R quantum:quantum /app/logs
+RUN mkdir -p /app/logs \
+  && chown -R quantum:0 /app /app/logs \
+  && chmod -R g+rwx /app/logs
 
 USER quantum
 

@@ -43,11 +43,13 @@ spec:
             secretKeyRef:
               name: amq-credentials
               key: username
+              optional: true
         - name: AMQ_PASSWORD
           valueFrom:
             secretKeyRef:
               name: amq-credentials
               key: password
+              optional: true
         - name: QUANTUM_REDIS_HOST
           value: "redis"
         - name: QUANTUM_REDIS_PORT
@@ -65,6 +67,7 @@ spec:
             secretKeyRef:
               name: elastic-credentials
               key: api-key
+              optional: true
 
         - name: ELASTIC_INDEX
           value: "quantum-chunk-events"

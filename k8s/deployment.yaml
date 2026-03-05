@@ -32,6 +32,8 @@ spec:
         ports:
         - containerPort: 8082
         env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "openshift"
         - name: AMQ_HOST
           value: "amq-broker"
         - name: AMQ_PORT

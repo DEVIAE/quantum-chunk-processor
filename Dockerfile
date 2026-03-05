@@ -9,6 +9,8 @@ WORKDIR /app
 
 COPY target/quantum-chunk-processor-*.jar app.jar
 
+RUN mkdir -p /app/logs && chown -R quantum:quantum /app/logs
+
 USER quantum
 
 EXPOSE 8082

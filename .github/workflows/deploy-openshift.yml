@@ -55,7 +55,12 @@ jobs:
           fi
 
       - name: Apply Kubernetes manifests
-        run: oc apply -f k8s/
+        run: |
+          oc apply -f k8s/configmap.yaml
+          oc apply -f k8s/deployment.yaml
+          oc apply -f k8s/service.yaml
+          # Apply KEDA ScaledObject only if CRD is installed
+          oc apply -f k8s/keda-scaledobject.yaml 2>/dev/null || echo "KEDA not installed, skipping ScaledObject"
 
       - name: Configure environment
         run: |

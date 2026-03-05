@@ -60,7 +60,7 @@ spec:
           value: "1-10"
           
         - name: ELASTIC_URL
-          value: "https://my-elasticsearch-project-f330d4.es.us-central1.gcp.elastic.cloud:443"
+          value: "https://my-elasticsearch-project-c3fe02.es.us-central1.gcp.elastic.cloud:443"
 
         - name: ELASTIC_API_KEY
           valueFrom:

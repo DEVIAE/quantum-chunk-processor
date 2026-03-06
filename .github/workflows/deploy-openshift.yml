@@ -50,14 +50,16 @@ jobs:
           curl -sL -H "Authorization: token ${{ secrets.GH_PACKAGES_TOKEN }}" \
             "https://raw.githubusercontent.com/DEVIAE/quantum-common/develop/k8s/amq-broker.yaml" \
             -o /tmp/amq-broker.yaml
-          oc apply -f /tmp/amq-broker.yaml
+          oc apply -f /tmp/amq-broker.yaml 2>/dev/null || \
+            (oc delete deployment/amq-broker --ignore-not-found && oc apply -f /tmp/amq-broker.yaml)
           oc rollout status deployment/amq-broker --timeout=3m || echo "AMQ broker still starting..."
 
           echo "=== Deploying Redis ==="
           curl -sL -H "Authorization: token ${{ secrets.GH_PACKAGES_TOKEN }}" \
             "https://raw.githubusercontent.com/DEVIAE/quantum-common/develop/k8s/redis.yaml" \
             -o /tmp/redis.yaml
-          oc apply -f /tmp/redis.yaml
+          oc apply -f /tmp/redis.yaml 2>/dev/null || \
+            (oc delete deployment/redis --ignore-not-found && oc apply -f /tmp/redis.yaml)
           oc rollout status deployment/redis --timeout=2m || echo "Redis still starting..."
 
       - name: Build Image

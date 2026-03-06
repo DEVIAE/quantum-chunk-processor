@@ -44,6 +44,22 @@ jobs:
           oc login --token=${{ secrets.OPENSHIFT_TOKEN }} --server=${{ env.OPENSHIFT_SERVER }}
           oc project ${{ env.OPENSHIFT_PROJECT }}
 
+      - name: Deploy shared infrastructure
+        run: |
+          echo "=== Deploying ActiveMQ Artemis ==="
+          curl -sL -H "Authorization: token ${{ secrets.GH_PACKAGES_TOKEN }}" \
+            "https://raw.githubusercontent.com/DEVIAE/quantum-common/develop/k8s/amq-broker.yaml" \
+            -o /tmp/amq-broker.yaml
+          oc apply -f /tmp/amq-broker.yaml
+          oc rollout status deployment/amq-broker --timeout=3m || echo "AMQ broker still starting..."
+
+          echo "=== Deploying Redis ==="
+          curl -sL -H "Authorization: token ${{ secrets.GH_PACKAGES_TOKEN }}" \
+            "https://raw.githubusercontent.com/DEVIAE/quantum-common/develop/k8s/redis.yaml" \
+            -o /tmp/redis.yaml
+          oc apply -f /tmp/redis.yaml
+          oc rollout status deployment/redis --timeout=2m || echo "Redis still starting..."
+
       - name: Build Image
         run: |
           if oc get bc/${{ env.SERVICE_NAME }} &>/dev/null; then
@@ -77,10 +93,7 @@ jobs:
       - name: Configure environment
         run: |
           oc set env deployment/${{ env.SERVICE_NAME }} \
-            SPRING_PROFILES_ACTIVE=openshift \
-            LOGSTASH_HOST=logstash \
-            LOGSTASH_PORT=5000 \
-            ELK_ENABLED=true || true
+            SPRING_PROFILES_ACTIVE=openshift || true
 
       - name: Wait for deployment
         run: oc rollout status deployment/${{ env.SERVICE_NAME }} --timeout=5m

@@ -31,6 +31,11 @@ processor:
     prefetch: ${CONSUMER_PREFETCH:10}
   metrics:
     queue-poll-interval: ${QUEUE_POLL_INTERVAL:15000}
+  paths:
+    processing-dir: ${PROCESSING_DIR:/data/processing}
+    processed-dir:  ${PROCESSED_DIR:/data/processed}
+    failed-dir:     ${FAILED_DIR:/data/failed}
+    output-dir:     ${OUTPUT_DIR:/data/output}
 
 management:
   endpoints:

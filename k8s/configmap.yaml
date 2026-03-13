@@ -9,7 +9,7 @@ data:
   QUANTUM_REDIS_PORT: "6379"
   CONSUMER_CONCURRENCY: "1-10"
   SERVER_PORT:          "8082"
-  PROCESS_DIR:          "/data/process"
   PROCESSING_DIR:       "/data/processing"
   PROCESSED_DIR:        "/data/processed"
   FAILED_DIR:           "/data/failed"
+  OUTPUT_DIR:           "/data/output"

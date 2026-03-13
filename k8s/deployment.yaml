@@ -58,11 +58,26 @@ spec:
           value: "redis123"
         - name: CONSUMER_CONCURRENCY
           value: "1-10"
-          
-        - name: ELASTIC_URL
-          value: "https://my-elasticsearch-project-c3fe02.es.us-central1.gcp.elastic.cloud:443"
-
-        - name: ELASTIC_API_KEY
+        - name: PROCESSING_DIR
+          valueFrom:
+            configMapKeyRef:
+              name: chunk-processor-config
+              key: PROCESSING_DIR
+        - name: PROCESSED_DIR
+          valueFrom:
+            configMapKeyRef:
+              name: chunk-processor-config
+              key: PROCESSED_DIR
+        - name: FAILED_DIR
+          valueFrom:
+            configMapKeyRef:
+              name: chunk-processor-config
+              key: FAILED_DIR
+        - name: OUTPUT_DIR
+          valueFrom:
+            configMapKeyRef:
+              name: chunk-processor-config
+              key: OUTPUT_DIR
           valueFrom:
             secretKeyRef:
               name: elastic-credentials
@@ -95,3 +110,10 @@ spec:
             path: /actuator/health
             port: 8082
           periodSeconds: 5
+        volumeMounts:
+        - name: quantum-data
+          mountPath: /data
+      volumes:
+      - name: quantum-data
+        persistentVolumeClaim:
+          claimName: quantum-data-pvc

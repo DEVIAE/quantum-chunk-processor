@@ -13,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
+import co.elastic.apm.api.ElasticApm;
+import co.elastic.apm.api.Transaction;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -43,6 +45,14 @@ public class ChunkConsumer {
         Chunk chunk = null;
         try {
             chunk = objectMapper.readValue(chunkJson, Chunk.class);
+
+            // ── APM: etiquetar transaccion con nombre de archivo y chunk ─────────────
+            Transaction txn = ElasticApm.currentTransaction();
+            txn.setName("chunk-processor: " + chunk.getFileName());
+            txn.addLabel("filename", chunk.getFileName());
+            txn.addLabel("chunk_id", chunk.getChunkId());
+            txn.addLabel("stage", "4-chunk-processor");
+            // ─────────────────────────────────────────────────────────────────────────
 
             // R3: Set MDC context for structured logging
             LoggingUtils.setChunkContext(chunk.getChunkId(), chunk.getFileName(),

@@ -174,3 +174,57 @@ y también:
 oc get pods | grep chunk
 
 porque probablemente podemos acelerar tu proceso entre 10 y 50 veces con una pequeña configuración.
+
+******/////// como actualizar las api key del proceso de logs para los distintos ambientes.
+
+2️⃣ Crear el secret correctamente
+
+Primero elimina el secret actual:
+
+oc delete secret elastic-credentials
+
+Luego créalo nuevamente:
+
+oc create secret generic elastic-credentials \
+  --from-literal=api-key="TU_API_KEY_AQUI"
+3️⃣ Reiniciar el deployment
+oc rollout restart deployment chunk-processor
+4️⃣ Verificar logs
+oc logs -f deployment/chunk-processor
+
+El error de:
+
+security_exception
+
+debería desaparecer.
+
+Y deberías empezar a ver logs como:
+
+Indexed chunk result into Elasticsearch
+🔥 Resultado esperado
+
+Cuando esto funcione correctamente el flujo será:
+
+chunk procesado
+↓
+chunk-processor
+↓
+indexa documento
+↓
+Elasticsearch
+↓
+Kibana
+↓
+visualización en Discover
+⚠️ Tip importante para tu demo
+
+Antes de presentar revisa que el secret tenga contenido:
+
+oc get secret elastic-credentials -o yaml
+
+Debería verse algo así:
+
+data:
+  api-key: ZXhhbXBsZV9rZXk=
+
+(no vacío).
